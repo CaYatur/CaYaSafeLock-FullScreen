@@ -275,6 +275,15 @@ CaYaSafeLock-FullScreen/
 
 ## Lisans
 
-Bu proje özel kullanım içindir. İzinsiz dağıtım ve ticari kullanım yasaktır.
+Bu proje **MIT License with Ethical Use Restriction** kapsamında lisanslanmıştır.
+
+Özgürce kullanabilir, değiştirebilir ve dağıtabilirsiniz. Ancak aşağıdaki kullanımlar **kesinlikle yasaktır:**
+
+- Habersiz/onaysız başkalarının bilgisayarını kilitlemek
+- Fidye yazılımı, şantaj veya zorlama amacıyla kullanmak
+- Yetkisiz erişim sağlamak veya kişisel veri toplamak
+- Herhangi bir suç faaliyetinde araç olarak kullanmak
+
+Ayrıntılar için [LICENSE](LICENSE) dosyasına bakın.
 
 © 2024 ÇAĞAN TURGUT — CaYaSafe
