@@ -1,3 +1,9 @@
+<div align="center">
+
+> **A [CaYaDev](https://github.com/CaYatur) product** — *CaYaSafe* serisinden
+
+</div>
+
 # CaYaSafeLock — Full Screen PC Kilit Sistemi
 
 CaYaSafeLock, Windows tabanlı bilgisayarları kilitlemek, izlemek ve yalnızca yetkili kullanıcıların (QR kod veya PIN ile) açmasına izin vermek için geliştirilmiş çok bileşenli bir güvenlik sistemidir. Eğitim kurumları, kütüphaneler veya halka açık bilgisayar salonları için tasarlanmıştır.
@@ -286,4 +292,12 @@ Bu proje **MIT License with Ethical Use Restriction** kapsamında lisanslanmış
 
 Ayrıntılar için [LICENSE](LICENSE) dosyasına bakın.
 
-© 2024 ÇAĞAN TURGUT — CaYaSafe
+---
+
+<div align="center">
+
+Made with ❤️ by **[CaYaDev](https://github.com/CaYatur)** · *CaYaSafe* ürün serisi
+
+© 2024-2026 ÇAĞAN TURGUT
+
+</div>
