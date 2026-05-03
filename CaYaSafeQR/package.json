@@ -1,0 +1,21 @@
+{
+  "name": "cayasafe-qr-server",
+  "version": "1.0.0",
+  "description": "CaYaSafe QR kod tabanlı kimlik doğrulama ve oylama sunucusu",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "start:vote": "node server2.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "crypto-js": "^4.2.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "path": "^0.12.7",
+    "socket.io": "^4.8.0",
+    "uuid": "^10.0.0"
+  }
+}

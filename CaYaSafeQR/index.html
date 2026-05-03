@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Giriş Sistemi CaYaSafe</title>
+    <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f8fa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .container h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .container label,
+        .container input,
+        .container button,
+        .container select {
+            display: block;
+            margin: 10px auto;
+            width: calc(100% - 40px);
+        }
+
+        .container input,
+        .container select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .container button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .container button:hover {
+            background-color: #0056b3;
+        }
+
+        #qr-video {
+            width: 100%;
+            max-height: 30vh; /* Kameranın yüksekliğini maksimum pencere yüksekliğinin %30'u olarak sınırla */
+            object-fit: cover; /* Görüntüyü kapsayacak şekilde uyumlandır */
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        #qr-result {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ddac09;
+            text-align: center; /* Metni ortala */
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Ekran boyutuna göre metin boyutunu ayarlamak için medya sorgusu */
+        @media screen and (max-width: 768px) {
+            .container {
+                width: 100%;
+                padding: 10px;
+            }
+
+            .container h1 {
+                font-size: 20px;
+            }
+
+            .container input,
+            .container select,
+            .container button {
+                width: calc(100% - 20px);
+                font-size: 14px;
+            }
+
+            #qr-result {
+                font-size: 16px;
+            }
+        }
+
+        @media screen and (min-width: 769px) and (max-width: 1024px) {
+            .container {
+                max-width: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>CaYaSafeSystem</h1>
+    <!-- QR kod tarayıcı konteyneri -->
+    <div class="container hidden" id="qr-container">
+        <h1>QR Kod Tarayıcı</h1>
+        <select id="camera-select"></select>
+        <button id="start-scan-button">QR Kod Okut</button>
+        <video id="qr-video" class="hidden"></video>
+    </div>
+
+    <!-- QR kod sonucu -->
+    <div class="container">
+        <div id="qr-result">Henüz bir QR kod okunmadı.</div>
+    </div>
+
+    <!-- Anahtar Girişi -->
+    <div class="container">
+        <h1>Anahtar Girişi</h1>
+        <label for="key-input">Anahtar:</label>
+        <input type="text" id="key-input" maxlength="8" />
+        <button id="submit-key-button">Anahtarı Gir</button>
+        <button id="copy-link-button" class="hidden">Anahtar Bağlantısını Kopyala</button>
+    </div>
+
+    <!-- JavaScript kodları -->
+    <script>
+        let userKey = '';
+        let scanner;
+        let selectedCameraId = '';
+
+        // URL'den anahtar kontrolü ve ekleme
+        function checkURLForKey() {
+            const path = window.location.pathname;
+            const keyPattern = /^\/(\d{8})$/;
+            const match = path.match(keyPattern);
+            if (match) {
+                return match[1];
+            }
+            return null;
+        }
+
+        // Sayfa yüklendiğinde çerezi kontrol et ve URL'den anahtar al
+        window.onload = function() {
+            const urlKey = checkURLForKey();
+            if (urlKey) {
+                userKey = urlKey;
+                setCookie('userKey', userKey, 360); // URL'den gelen anahtarı 360 gün boyunca sakla
+                document.getElementById('key-input').value = userKey;
+                document.getElementById('qr-container').classList.remove('hidden');
+                document.getElementById('copy-link-button').classList.remove('hidden');
+            } else {
+                const savedKey = getCookie('userKey');
+                if (savedKey) {
+                    userKey = savedKey;
+                    document.getElementById('key-input').value = userKey;
+                    document.getElementById('qr-container').classList.remove('hidden');
+                    document.getElementById('copy-link-button').classList.remove('hidden');
+                }
+            }
+
+            const savedCameraId = getCookie('selectedCameraId');
+            if (savedCameraId) {
+                selectedCameraId = savedCameraId;
+            }
+
+            // Kameraları yükle
+            loadCameras();
+        };
+
+        // Anahtar girildiğinde QR tarama butonunu ve bağlantı kopyalama butonunu göster ve çerezi kaydet
+        document.getElementById('submit-key-button').addEventListener('click', function() {
+            userKey = document.getElementById('key-input').value;
+            if (userKey.length !== 8) {
+                alert('Anahtar 8 basamaklı olmalıdır.');
+                return;
+            }
+            setCookie('userKey', userKey, 360); // Anahtarı 360 gün boyunca sakla
+            document.getElementById('qr-container').classList.remove('hidden');
+            document.getElementById('copy-link-button').classList.remove('hidden');
+        });
+
+        // "Anahtar Bağlantısını Kopyala" butonuna tıklanınca bağlantıyı kopyalama
+        document.getElementById('copy-link-button').addEventListener('click', function() {
+            const url = `${window.location.origin}/${userKey}`;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Bağlantı kopyalandı: ' + url);
+            }).catch(err => {
+                console.error('Bağlantı kopyalama hatası: ', err);
+            });
+        });
+
+        // Kameraları yükleme ve seçme işlemi
+        function loadCameras() {
+            Instascan.Camera.getCameras().then(function (cameras) {
+                if (cameras.length > 0) {
+                    const cameraSelect = document.getElementById('camera-select');
+                    cameraSelect.innerHTML = '';
+                    cameras.forEach((camera, index) => {
+                        const option = document.createElement('option');
+                        option.value = camera.id;
+                        option.text = camera.name || `Kamera ${index + 1}`;
+                        cameraSelect.appendChild(option);
+                    });
+                    cameraSelect.value = selectedCameraId || cameras[0].id;
+                } else {
+                    console.error("No cameras found.");
+                    alert("No cameras found.");
+                }
+            }).catch(function (e) {
+                console.error(e);
+                alert("Error accessing camera.");
+            });
+        }
+
+        // QR kod tarama butonuna tıklayınca kamerayı başlat
+        document.getElementById('start-scan-button').addEventListener('click', function() {
+            selectedCameraId = document.getElementById('camera-select').value;
+            setCookie('selectedCameraId', selectedCameraId, 30); // Seçilen kamerayı 30 gün boyunca sakla
+            startQRScanner(selectedCameraId);
+        });
+
+        // Instascan kütüphanesi ile QR kod tarayıcı oluşturma
+        scanner = new Instascan.Scanner({
+            video: document.getElementById("qr-video"), // Video elementini belirtme
+            mirror: false, // Aynalama ayarı
+            facingMode: "environment", // Kamera modu
+        });
+
+        // QR kod tarayıcıya "scan" olay dinleyicisi ekleme
+        scanner.addListener("scan", function (content) {
+            console.log(content); // Konsola QR kod içeriğini yazdırma
+            document.getElementById("qr-result").innerText = "Kod İşleniyor..."; // Sonucu görüntüleme alanına yazı ekleme
+
+            // Tarayıcıyı durdurma
+            scanner.stop();
+
+            // QR kod içeriğini kontrol ve çözme işlemi
+            checkAndDecryptQRCode(content);
+        });
+
+        // QR kod çözme ve kontrol işlemi
+        function checkAndDecryptQRCode(qrContent) {
+            console.log("QR kod içeriği işleniyor: " + qrContent);
+
+            // QR kod içeriğini boşluk karakterine göre ayır
+            const encryptedParts = qrContent.split(' ');
+            const cipherText = encryptedParts[0];
+            const encryptedKeyPart = encryptedParts[1];
+
+            // Şifreleme parametreleri - anahtarlar sunucudan alınmalıdır, kaynak kodda saklanmamalıdır!
+            // TODO: Bu anahtarları sunucu tarafında tutun ve /api/config endpoint'i üzerinden alın.
+            const key = CryptoJS.enc.Utf8.parse(window.CY_AES_KEY || "REPLACE_WITH_ENV_KEY");
+            const iv = CryptoJS.enc.Utf8.parse(window.CY_AES_IV || "REPLACE_WITH_ENV_IV");
+
+            // Şifre çözme işlemi (boşluktan sonraki kısım)
+            const decryptedKeyPart = CryptoJS.AES.decrypt(encryptedKeyPart, key, { iv: iv });
+            const decryptedKey = decryptedKeyPart.toString(CryptoJS.enc.Utf8);
+
+            console.log("Çözülen anahtar: ", decryptedKey);
+
+            // Kullanıcının girdiği anahtar ile çözülen anahtarı karşılaştır
+            if (userKey !== decryptedKey) {
+                document.getElementById("qr-result").innerText = "Bu cihazı açmanız için yetkiniz yok.";
+                return;
+            }
+
+            // Şifre çözme işlemi (boşluktan önceki kısım)
+            const decryptedTextPart = CryptoJS.AES.decrypt(cipherText, key, { iv: iv });
+            const decryptedText = decryptedTextPart.toString(CryptoJS.enc.Utf8);
+
+            console.log("Çözülen metin: ", decryptedText);
+            document.getElementById("qr-result").innerText = decryptedText;
+
+            // Çözümlenmemiş halini sunucuya kaydetme
+            sendDecryptedDataToServer(qrContent, decryptedText);
+        }
+
+        // Sunucuya çözülen veriyi gönderme fonksiyonu
+        function sendDecryptedDataToServer(qrContent) {
+            //fetch("http://localhost:8080/kaydet", {
+            fetch('/kaydet', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ qrData: qrContent })
+            })
+            .then(response => {
+                if (response.status === 409) {
+                    return response.json().then(data => {
+                        console.warn("Hata: " + data.error);
+                    });
+                } else if (response.ok) {
+                    return response.json().then(data => {
+                        console.log("Veri başarıyla kaydedildi.");
+                    });
+                } else {
+                    throw new Error("Sunucu hatası: " + response.statusText);
+                }
+            })
+            .catch(error => {
+                console.error("Hata: ", error);
+            });
+        }
+
+
+
+
+        // QR tarayıcıyı başlatma
+        function startQRScanner(cameraId) {
+            Instascan.Camera.getCameras().then(function (cameras) {
+                const selectedCamera = cameras.find(camera => camera.id === cameraId);
+                if (selectedCamera) {
+                    document.getElementById('qr-video').classList.remove('hidden');
+                    scanner.start(selectedCamera);
+                } else {
+                    console.error("Kamera bulunamadı.");
+                }
+            }).catch(function (e) {
+                console.error(e);
+                alert("Kamera başlatılamadı.");
+            });
+        }
+
+        // Çerezleri ayarlamak için fonksiyon
+        function setCookie(name, value, days) {
+            const d = new Date();
+            d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+            const expires = "expires=" + d.toUTCString();
+            document.cookie = name + "=" + value + ";" + expires + ";path=/";
+        }
+
+        // Çerezleri almak için fonksiyon
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+    </script>
+</body>
+</html>

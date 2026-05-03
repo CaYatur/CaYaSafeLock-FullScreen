@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+    <startup>
+        <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.8" />
+    </startup>
+    <appSettings>
+        <!-- AES şifreleme anahtarı - 32 karakter (256-bit) -->
+        <!-- GERÇEK DEĞER: Bu değeri kendi güvenli anahtarınızla değiştirin, kaynak koda yazmayın! -->
+        <add key="AES_KEY" value="REPLACE_WITH_YOUR_32_CHAR_AES_KEY" />
+
+        <!-- AES IV - 16 karakter (128-bit) -->
+        <add key="AES_IV" value="REPLACE_WITH_16CH" />
+
+        <!-- QR Server URL - devtunnels veya production URL -->
+        <add key="QR_SERVER_URL" value="http://localhost:8080/" />
+
+        <!-- Oylama Sunucusu URL -->
+        <add key="VOTE_SERVER_URL" value="http://localhost:3000" />
+    </appSettings>
+</configuration>

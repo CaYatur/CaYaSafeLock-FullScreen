@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anket</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #212121;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 600px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+            font-weight: bold;
+        }
+
+        #secenekler {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .secimDiv {
+            margin: 10px 0;
+            width: 100%;
+        }
+
+        button {
+            padding: 15px 20px;
+            background-color: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #e84118;
+            transform: scale(1.05);
+        }
+
+        .disabled {
+            background-color: gray; /* Oy verilemediğinde buton rengi */
+            cursor: not-allowed; /* İşaretçi değişimi */
+        }
+
+        .animated {
+            animation: scale-up 0.5s forwards;
+        }
+
+        @keyframes scale-up {
+            0% {
+                transform: scale(1);
+            }
+            100% {
+                transform: scale(1.1);
+            }
+        }
+
+        .notification {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #28a745;
+            color: white;
+            border-radius: 5px;
+            display: none;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Anket</h1>
+        <div id="secenekler"></div>
+        <div id="notification" class="notification"></div>
+    </div>
+
+    <script>
+        const kod = window.location.pathname.split('/')[1]; // URL'den kodu al
+        const socket = io();
+
+        // Çerezleri kontrol et ve oy verip vermediğini kontrol et
+        const checkCookie = (name) => {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        };
+
+        const setCookie = (name, value, days) => {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            const expires = `expires=${date.toUTCString()}`;
+            document.cookie = `${name}=${value}; ${expires}; path=/`;
+        };
+
+        // Oylama seçeneklerini ve oy verme işlevini ayarlayın
+        const updateVotes = (oylar, secenekler) => {
+            const seceneklerDiv = document.getElementById('secenekler');
+            seceneklerDiv.innerHTML = ''; // Önceki seçenekleri temizle
+
+            for (const secim in secenekler) {
+                const secimDiv = document.createElement('div');
+                secimDiv.className = 'secimDiv';
+                secimDiv.innerHTML = `${secenekler[secim]}: <strong>${oylar[secim] || 0}</strong> oy`;
+                const button = document.createElement('button');
+                button.textContent = 'Oy Ver';
+
+                // Çerez kontrolü
+                const cookieName = `oy_${kod}_${secim}`;
+                if (checkCookie(cookieName)) {
+                    button.disabled = true; // Daha önce oy verildi, butonu devre dışı bırak
+                    button.classList.add('disabled'); // Devre dışı stil sınıfı
+                }
+
+                button.onclick = () => {
+                    if (!checkCookie(cookieName)) {
+                        socket.emit('oy-ver', { kod, secim });
+                        setCookie(cookieName, 'verildi', 1); // 1 gün geçerli çerez
+                        button.classList.add('animated'); // Animasyonu uygula
+                        showNotification("Oyunuz başarıyla kaydedildi!"); // Bildirimi göster
+                        button.disabled = true; // Oy verildi, butonu devre dışı bırak
+                        button.classList.add('disabled'); // Devre dışı stil sınıfı
+                    } else {
+                        showNotification("Bu seçeneğe zaten oy verdiniz!"); // Oy verilmiş bildirim
+                    }
+                };
+
+                secimDiv.appendChild(button);
+                seceneklerDiv.appendChild(secimDiv);
+            }
+        };
+
+        // Bağlanınca anket verilerini al
+        socket.emit('anket-al', { kod });
+
+        // Anketi al
+        socket.on('anket-alindi', (anket) => {
+            updateVotes(anket.oylar, anket.secenekler);
+        });
+
+        // Oylama güncellemeleri için
+        socket.on('oy-guncelle', ({ oylar, secenekler }) => {
+            updateVotes(oylar, secenekler);
+        });
+
+        // Sayfa yüklendiğinde otomatik oy güncellemesi
+        window.onload = () => {
+            socket.emit('anket-al', { kod });
+        };
+
+        // Bildirimi göster
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.innerText = message;
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000); // 3 saniye sonra kaybolsun
+        }
+    </script>
+</body>
+</html>

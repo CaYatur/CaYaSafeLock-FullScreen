@@ -1,0 +1,225 @@
+# =============================================
+# CaYaSafeLock - GitHub'a yüklenmemesi gerekenler
+# =============================================
+
+# -----------------------------------------------
+# HASSAS VERİ DOSYALARI - KESİNLİKLE YÜKLEMEYİN
+# -----------------------------------------------
+
+# Şifreli kullanıcı verileri ve runtime data dosyaları
+CaYaSafeQR/userLoginData.CY
+CaYaSafeYazılım/CYSYSTEM/CYdata/CtL.cy
+CaYaSafeYazılım/CYSYSTEM/CYdata/log.cdat
+**/*.CY
+**/*.cy
+**/*.cdat
+**/*.cysf
+
+# Ortam değişkenleri
+.env
+.env.local
+.env.production
+.env.development
+# .env.example yüklenebilir (template olarak)
+
+# Secrets içeren App.config dosyaları (AES key barındırır)
+# Bu dosyaları App.config.example'dan kopyalayıp kendi anahtarınızı girin
+Visual Studio/PCDisableCY/PCDisableCY/App.config
+Visual Studio/CaYaSafeLockMainSetup/CaYaSafeLockMainSetup/App.config
+
+# -----------------------------------------------
+# NODE.JS
+# -----------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# -----------------------------------------------
+# C# / .NET BUILD ÇIKTILARI
+# -----------------------------------------------
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+
+# NuGet
+*.nupkg
+*.snupkg
+**/packages/
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+
+# Build sonuçları
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]uild/
+[Ll]og/
+[Ll]ogs/
+
+# Test sonuçları
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# -----------------------------------------------
+# DERLENMİŞ ÇALIŞTIRILABILIR DOSYALAR
+# -----------------------------------------------
+# Bu .exe'ler kaynak koddan derlenir, binary'leri yüklemeyin
+CaYaSafeYazılım/CaYaSafeLockMainSetup.exe
+CaYaSafeYazılım/CaYaSafeLockSetup.exe
+CaYaSafeYazılım/CaYaProtection/CaYaSafe/LockSC/PCDisableCY.exe
+CaYaSafeYazılım/CaYaProtection/CaYaSafe/PCcheck/CYPCcheck.exe
+CaYaSafeYazılım/CaYaProtection/CaYaSafe/Services/CaYaSer/CYSADS.exe
+CaYaSafeYazılım/CaYaProtection/CaYaSafe/Services/CaYaSer/CYSADS.pdb
+CaYaSafeYazılım/CaYaProtection/CaYaSafe/Services/CaYaSer/CYSADS.exe.config
+CaYaSafeYazılım/CaYaProtection/CaYaSafe/Services/CaYaPCCheck/CaYaControlSystem.exe
+CaYaSafeYazılım/CaYaProtection/CaYaSafe/Services/CaYaPCCheck/CaYaControlSystem.exe.config
+CaYaSafeYazılım/CaYaProtection/CaYaSafe/Services/CaYaPCCheck/CaYaControlSystem.pdb
+**/*.exe
+**/*.pdb
+**/*.dll
+**/*.msi
+**/*.msix
+
+# -----------------------------------------------
+# VISUAL STUDIO
+# -----------------------------------------------
+*.rsuser
+*.pidb
+*.polystate
+*.rsp
+_UpgradeReport_Files/
+Backup*/
+UpgradeLog*.XML
+UpgradeLog*.htm
+ServiceFabricBackup/
+SmartStrongName/
+
+# Roslyn cache
+*.VisualState.xml
+TestResult.xml
+
+# NCrunch
+_NCrunch_*
+.*crunch*.local.xml
+nCrunchTemp_*
+
+# MightyMoose
+AutoTest.Net/
+
+# Web workbench (sass)
+.sass-cache/
+
+# Installshield output folder
+[Ee]xpress/
+
+# DocProject is a developer tool
+DocProject/buildhelp/
+DocProject/Help/*.HxT
+DocProject/Help/*.HxC
+DocProject/Help/*.hhc
+DocProject/Help/*.hhk
+DocProject/Help/*.hhp
+DocProject/Help/Html2/
+DocProject/Help/html/
+
+# Click-Once directory
+publish/
+
+# Publish Web Output
+*.[Pp]ublish.xml
+*.azurePubxml
+*.pubxml
+*.publishproj
+
+# Note: Comment the next line if you want to checkin your web deploy settings,
+# but database connection strings (with potential passwords) will be unencrypted
+*.pubxml
+*.publishproj
+
+# Windows Azure Build Output
+csx/
+*.build.csdef
+
+# Azure tools
+AppPackages/
+BundleArtifacts/
+Package.StoreAssociation.xml
+_pkginfo.txt
+
+# C++ build outputs
+*.ilk
+*.meta
+*.obj
+*.iobj
+*.pch
+*.lib
+*.ipdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*_wpftmp.csproj
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+
+# -----------------------------------------------
+# WINDOWS
+# -----------------------------------------------
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# -----------------------------------------------
+# MACOS
+# -----------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# -----------------------------------------------
+# LOG DOSYALARI
+# -----------------------------------------------
+*.log
+logs/
+
+# -----------------------------------------------
+# ESKI / GEÇİCİ DOSYALAR
+# -----------------------------------------------
+CaYaSafeQR/OLD/
+CaYaSafeQR/deneme/
